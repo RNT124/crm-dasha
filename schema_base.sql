@@ -101,7 +101,7 @@ create table if not exists public.clientes (
   distrito text,
   direccion text,
   referencia text,
-  costo_envio integer default 13,
+  costo_envio integer default 0,
   total_gastado numeric default 0,
   pedidos_count integer default 0,
   creado_en timestamp with time zone default now(),
@@ -188,7 +188,7 @@ create table if not exists public.pedidos (
   carrito_id uuid,
   estado text default 'pago_pendiente'::text,
   subtotal numeric not null,
-  costo_envio numeric default 13,
+  costo_envio numeric default 0,
   total numeric not null,
   monto_pagado numeric default 0,
   tipo_envio text,
@@ -288,7 +288,7 @@ alter table public.inventario_detalle add constraint inventario_detalle_pkey PRI
 alter table public.inventario_sesiones add constraint inventario_sesiones_pkey PRIMARY KEY (id);
 alter table public.lives add constraint lives_pkey PRIMARY KEY (id);
 alter table public.pagos add constraint pagos_estado_check CHECK ((estado = ANY (ARRAY['pendiente'::text, 'confirmado'::text])));
-alter table public.pagos add constraint pagos_metodo_check CHECK ((metodo = ANY (ARRAY['Yape'::text, 'Plin'::text, 'Transferencia'::text])));
+alter table public.pagos add constraint pagos_metodo_check CHECK ((metodo = ANY (ARRAY['Yape'::text, 'Plin'::text, 'Transferencia'::text, 'Tarjeta'::text])));
 alter table public.pagos add constraint pagos_pkey PRIMARY KEY (id);
 alter table public.pedidos add constraint pedidos_estado_check CHECK ((estado = ANY (ARRAY['acumulando'::text, 'listo_envio'::text, 'pago_pendiente'::text, 'pago_parcial'::text, 'pago_completo'::text, 'empaquetado'::text, 'en_camino'::text, 'entregado'::text, 'cancelado'::text])));
 alter table public.pedidos add constraint pedidos_numero_key UNIQUE (numero);
@@ -336,7 +336,7 @@ CREATE INDEX IF NOT EXISTS idx_variantes_prenda ON public.prenda_variantes USING
 CREATE OR REPLACE FUNCTION public.generar_numero_pedido()
  RETURNS trigger LANGUAGE plpgsql AS $function$
 declare
-  prefijo text := 'PED';
+  prefijo text := 'DAS';
   ultimo integer;
 begin
   select coalesce(max(cast(substring(numero from '^[A-Z]+-\d{4}-(\d+)') as integer)), 0)
